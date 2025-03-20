@@ -1,0 +1,31 @@
+# .terraform directories
+.terraform/
+
+# Terraform CLI files
+*.tfstate
+*.tfstate.*
+*.backup
+
+# Crash log files
+crash.log
+
+# Exclude override files (these are typically local changes, shouldn't be committed)
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Include .tfvars files, but don't commit sensitive information
+# example: mysecret.tfvars
+*.tfvars
+
+# Include .terraform.lock.hcl (for locking provider versions)
+.terraform.lock.hcl
+
+# Local .vscode directory (for VSCode settings)
+.vscode/
+
+# Terraform plan output files
+*.plan
+
+*.pem
