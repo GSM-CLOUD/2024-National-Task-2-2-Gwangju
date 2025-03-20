@@ -26,3 +26,15 @@ EOT
 
   skip_crds = false
 }
+
+resource "helm_release" "argo_rollout" {
+  namespace = "argocd"
+  create_namespace = true
+  repository = "https://argoproj.github.io/argo-helm"
+
+  name = "argo-rollouts"
+  chart = "argo-rollouts"
+  version = "2.31.1"
+
+  depends_on = [helm_release.argocd]
+}

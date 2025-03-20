@@ -1,0 +1,12 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: app-service-preview
+  namespace: $(NAMESPACE)
+spec:
+  selector:
+    app: $(ROLLOUT_APP_NAME)
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080

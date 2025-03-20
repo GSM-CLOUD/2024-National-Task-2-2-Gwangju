@@ -34,3 +34,7 @@ variable "argocd_password" {
   default = "password"
   sensitive = true
 }
+
+variable "rollout_app_name" {
+  default = "blue-green-app"
+}

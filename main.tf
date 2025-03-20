@@ -54,6 +54,7 @@ module "bastion" {
   app_repo_name = module.codecommit.app_repo_name
   gitops_repo_name = module.codecommit.gitops_repo_name
   app_namespace = var.app_namespace
+  rollout_app_name = var.rollout_app_name
 
   depends_on = [ module.codecommit ]
 }
@@ -76,14 +77,24 @@ module "nginx_ingress_controller" {
 
   depends_on = [ module.lb_controller ]
 }
+module "argocod" {
+  source = "./argocd"
+  password = var.argocd_password
+  prefix = var.prefix
+
+  depends_on = [ module.nginx_ingress_controller ]  
+}
 
 module "resources" {
   source = "./resources"
   app_namespace = var.app_namespace
   alb_name = var.alb_name
   alb_ingress_name = var.alb_ingress_name
+  rollout_app_name = var.rollout_app_name
+  account_id = data.aws_caller_identity.current.account_id
+  region = var.region
 
-  depends_on = [ module.nginx_ingress_controller ]
+  depends_on = [ module.argocod ]
 }
 
 module "codebuild" {
@@ -103,12 +114,4 @@ module "codepipeline" {
   account_id = data.aws_caller_identity.current.account_id
 
   depends_on = [ module.codebuild ]
-}
-
-module "argocod" {
-  source = "./argocd"
-  password = var.argocd_password
-  prefix = var.prefix
-
-  depends_on = [ module.codepipeline]  
 }

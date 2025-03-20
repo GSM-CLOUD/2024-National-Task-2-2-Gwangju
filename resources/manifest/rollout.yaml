@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: $(ROLLOUT_APP_NAME)
+  namespace: $(NAMESPACE)
+spec:
+  replicas: 2
+  revisionHistoryLimit: 2
+  selector:
+    matchLabels:
+      app: $(ROLLOUT_APP_NAME)
+  template:
+    metadata:
+      labels:
+        app: $(ROLLOUT_APP_NAME)
+    spec:
+      containers:
+      - name: $(ROLLOUT_APP_NAME)
+        image: $(ACCOUNT_ID).dkr.ecr.$(REGION).amazonaws.com/gwangju-ecr-app:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+  strategy:
+    blueGreen:
+      activeService: app-service
+      previewService: app-service-preview
+      autoPromotionEnabled: true
+      autoPromotionSeconds: 20

@@ -19,29 +19,35 @@ systemctl enable docker
 systemctl restart docker
 
 echo "complete"
-cat <<EOT > deployment.yaml
-apiVersion: apps/v1
-kind: Deployment
+cat <<EOT > app_rollout.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
 metadata:
-  name: ${var.ecr_app_name}
-  namespace: ${var.app_namespace}
-  labels:
-    app: ${var.ecr_app_name}
+  name: ${var.rollout_app_name}
+  namespace: app
 spec:
   replicas: 2
+  revisionHistoryLimit: 2
   selector:
     matchLabels:
-      app: ${var.ecr_app_name}
+      app: ${var.rollout_app_name}
   template:
     metadata:
       labels:
-        app: ${var.ecr_app_name}
+        app: ${var.rollout_app_name}
     spec:
       containers:
-      - name: ${var.ecr_app_name}
-        image: ${var.account_id}.dkr.ecr.${var.region}.amazonaws.com/${var.ecr_app_name}:latest
+      - name: ${var.rollout_app_name}
+        image: ${var.account_id}.dkr.ecr.${var.region}.amazonaws.com/gwangju-ecr-app:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 8080
+  strategy:
+    blueGreen:
+      activeService: app-service
+      previewService: app-service-preview
+      autoPromotionEnabled: true
+      autoPromotionSeconds: 20
 EOT
 
 echo "complete"
@@ -76,7 +82,7 @@ phases:
         && git config --global credential.UseHttpPath true \
         && git clone https://git-codecommit.ap-northeast-2.amazonaws.com/v1/repos/\$GITOPS_REPO \
         && cd \$GITOPS_REPO \
-        && sed "s|image: .*|image: \$ACCOUNT_ID.dkr.ecr.\$AWS_REGION.amazonaws.com/\$REPO_NAME:\$IMAGE_TAG|" deployment.yaml > tmpfile && mv tmpfile deployment.yaml \
+        && sed "s|image: .*|image: \$ACCOUNT_ID.dkr.ecr.\$AWS_REGION.amazonaws.com/\$REPO_NAME:\$IMAGE_TAG|" app_rollout.yaml > tmpfile && mv tmpfile app_rollout.yaml \
         && git config --global user.email codedeploy \
         && git config --global user.name codedeploy \
         && git add . \
@@ -119,7 +125,7 @@ git push origin main
 echo "complete"
 cd ..
 git clone https://git-codecommit.${var.region}.amazonaws.com/v1/repos/${var.gitops_repo_name}
-mv ./deployment.yaml ./${var.gitops_repo_name}
+mv ./app_rollout.yaml ./${var.gitops_repo_name}
 cd ${var.gitops_repo_name}
 
 echo "complete"

@@ -25,3 +25,5 @@ variable "app_namespace" {}
 variable "app_repo_name" {}
 
 variable "gitops_repo_name" {}
+
+variable "rollout_app_name" {}
